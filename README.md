@@ -1,37 +1,37 @@
 # 📚 Tutor Virtual de Lectura Crítica con IA (MERN)
 
-[cite_start]**AppComprende** es una aplicación web de tutoría que utiliza **Inteligencia Artificial (IA)** para mejorar la comprensión lectora y el pensamiento crítico en estudiantes universitarios[cite: 345, 346]. [cite_start]La plataforma genera preguntas, detecta falacias y ofrece retroalimentación personalizada, apoyándose en automatización para crear rutas de aprendizaje adaptativas[cite: 335].
+**AppComprende** es una aplicación web de tutoría que utiliza **Inteligencia Artificial (IA)** para mejorar la comprensión lectora y el pensamiento crítico en estudiantes universitarios. La plataforma genera preguntas, detecta falacias y ofrece retroalimentación personalizada, apoyándose en automatización para crear rutas de aprendizaje adaptativas.
 
 ---
 
 ## 🚀 Funcionalidades Principales
 
 ### 🤖 **Asistente de IA**
-- [cite_start]**Generación de Preguntas:** Crea preguntas de comprensión lectora a nivel literal, inferencial y crítico a partir de los textos cargados por el usuario[cite: 376, 486].
-- [cite_start]**Detección de Sesgos y Falacias:** Analiza los textos para identificar y señalar posibles sesgos o falacias, proporcionando retroalimentación automática para fomentar el pensamiento crítico[cite: 377, 488].
+- **Generación de Preguntas:** Crea preguntas de comprensión lectora a nivel literal, inferencial y crítico a partir de los textos cargados por el usuario.
+- **Detección de Sesgos y Falacias:** Analiza los textos para identificar y señalar posibles sesgos o falacias, proporcionando retroalimentación automática para fomentar el pensamiento crítico.
 
 ### 📈 **Seguimiento y Personalización**
-- [cite_start]**Dashboard de Progreso:** Permite a estudiantes y docentes visualizar el avance, las calificaciones y el rendimiento en las actividades[cite: 380, 490, 494].
-- [cite_start]**Rutas de Estudio Personalizadas:** Ofrece un camino de aprendizaje adaptado a las necesidades de cada estudiante para reforzar sus habilidades[cite: 378].
+- **Dashboard de Progreso:** Permite a estudiantes y docentes visualizar el avance, las calificaciones y el rendimiento en las actividades.
+- **Rutas de Estudio Personalizadas:** Ofrece un camino de aprendizaje adaptado a las necesidades de cada estudiante para reforzar sus habilidades.
 
 ### ⚙️ **Automatización**
-- [cite_start]**Notificaciones y Recordatorios:** Utiliza flujos de automatización con **n8n** para enviar recordatorios sobre actividades pendientes y notificar sobre el progreso[cite: 353, 379, 492].
+- **Notificaciones y Recordatorios:** Utiliza flujos de automatización con **n8n** para enviar recordatorios sobre actividades pendientes y notificar sobre el progreso.
 
 ### 👤 **Gestión de Usuarios**
-- [cite_start]**Autenticación Segura:** Sistema de registro e inicio de sesión con roles diferenciados para estudiantes y docentes[cite: 374, 496].
-- [cite_start]**Carga de Textos:** Los estudiantes pueden subir documentos en formato PDF, DOCX o TXT para que la plataforma los procese[cite: 484, 485].
+- **Autenticación Segura:** Sistema de registro e inicio de sesión con roles diferenciados para estudiantes y docentes.
+- **Carga de Textos:** Los estudiantes pueden subir documentos en formato PDF, DOCX o TXT para que la plataforma los procese.
 
 ---
 
 ## 🛠️ Tecnologías Utilizadas
 
-- [cite_start]**Frontend:** React.js (con Context API o Redux para la gestión de estado)[cite: 362, 385].
-- [cite_start]**Backend:** Node.js, Express.js (exponiendo una API REST)[cite: 363, 386].
-- [cite_start]**Base de Datos:** MongoDB (desplegado en MongoDB Atlas)[cite: 364, 387].
-- [cite_start]**Inteligencia Artificial:** Modelos de NLP a través de APIs de Hugging Face / OpenAI[cite: 365, 390].
-- [cite_start]**Automatización:** n8n para la orquestación de flujos de trabajo y notificaciones[cite: 366].
-- [cite_start]**Pruebas:** Jest (unitarias) y Cypress (E2E), con una cobertura objetivo del 70%[cite: 358, 369].
-- [cite_start]**Contenerización:** Docker para el despliegue de la aplicación[cite: 394].
+- **Frontend:** React.js (con Context API o Redux para la gestión de estado).
+- **Backend:** Node.js, Express.js (exponiendo una API REST).
+- **Base de Datos:** MongoDB (desplegado en MongoDB Atlas).
+- **Inteligencia Artificial:** Modelos de NLP a través de APIs de Hugging Face / OpenAI.
+- **Automatización:** n8n para la orquestación de flujos de trabajo y notificaciones.
+- **Pruebas:** Jest (unitarias) y Cypress (E2E), con una cobertura objetivo del 70%.
+- **Contenerización:** Docker para el despliegue de la aplicación.
 
 ---
 
@@ -53,10 +53,3 @@ Comprende-IA/
     │   ├── context/       # Estado global (Autenticación, etc.)
     │   └── services/      # Llamadas a la API del backend
     └── ...
--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-Arquitectura Principal
-
-<img width="932" height="692" alt="image-Photoroom" src="https://github.com/user-attachments/assets/a9430d7d-9418-4c81-9800-1155447f672c" />
-
