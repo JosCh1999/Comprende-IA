@@ -1,27 +1,55 @@
-# Comprende-IA
-La aplicación tiene como objetivo principal ser un tutor virtual de lectura crítica que utiliza inteligencia artificial (IA) para mejorar la comprensión lectora y el pensamiento crítico de estudiantes y docentes universitarios. Busca ofrecer una herramienta accesible y sostenible.
--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-Características Principales
+# 📚 Tutor Virtual de Lectura Crítica con IA (MERN)
 
-⦁	Frontend: Se desarrollará con React.js y se gestionará el estado con Context API o Redux. El diseño será responsivo y cumplirá con las normas de accesibilidad WCAG 2.1 AA.
+**AppComprende** es una aplicación web de tutoría que utiliza **Inteligencia Artificial (IA)** para mejorar la comprensión lectora y el pensamiento crítico en estudiantes universitarios. La plataforma genera preguntas, detecta falacias y ofrece retroalimentación personalizada, apoyándose en automatización para crear rutas de aprendizaje adaptativas.
 
-⦁	Backend: Estará construido con Express.js y Node.js, utilizando una API REST para exponer sus servicios.
+---
 
-⦁	Base de datos: Se usará MongoDB en la nube, específicamente con MongoDB Atlas.
+## 🚀 Funcionalidades Principales
 
-⦁	Inteligencia Artificial: Integrará modelos de NLP (Procesamiento de Lenguaje Natural) de Hugging Face o OpenAI. Las funcionalidades de IA incluirán la generación automática de preguntas y la detección de sesgos y falacias en los textos.
+### 🤖 **Asistente de IA**
+- **Generación de Preguntas:** Crea preguntas de comprensión lectora a nivel literal, inferencial y crítico a partir de los textos cargados por el usuario.
+- **Detección de Sesgos y Falacias:** Analiza los textos para identificar y señalar posibles sesgos o falacias, proporcionando retroalimentación automática para fomentar el pensamiento crítico.
 
-⦁	Automatización: Se implementarán flujos con n8n para gestionar sesiones, enviar notificaciones, recordatorios y registrar el progreso del estudiante.
+### 📈 **Seguimiento y Personalización**
+- **Dashboard de Progreso:** Permite a estudiantes y docentes visualizar el avance, las calificaciones y el rendimiento en las actividades.
+- **Rutas de Estudio Personalizadas:** Ofrece un camino de aprendizaje adaptado a las necesidades de cada estudiante para reforzar sus habilidades.
 
-⦁	Pruebas: Se desarrollarán pruebas unitarias y E2E (End-to-End) con herramientas como Jest y Cypress, buscando una cobertura de código de al menos el 70%.
+### ⚙️ **Automatización**
+- **Notificaciones y Recordatorios:** Utiliza flujos de automatización con **n8n** para enviar recordatorios sobre actividades pendientes y notificar sobre el progreso.
 
-⦁	Contenerización: La solución será contenida con Docker para asegurar la portabilidad y facilitar los despliegues.
+### 👤 **Gestión de Usuarios**
+- **Autenticación Segura:** Sistema de registro e inicio de sesión con roles diferenciados para estudiantes y docentes.
+- **Carga de Textos:** Los estudiantes pueden subir documentos en formato PDF, DOCX o TXT para que la plataforma los procese.
 
--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+---
 
-Arquitectura Principal
+## 🛠️ Tecnologías Utilizadas
 
-<img width="932" height="692" alt="image-Photoroom" src="https://github.com/user-attachments/assets/a9430d7d-9418-4c81-9800-1155447f672c" />
+- **Frontend:** React.js (con Context API o Redux para la gestión de estado).
+- **Backend:** Node.js, Express.js (exponiendo una API REST).
+- **Base de Datos:** MongoDB (desplegado en MongoDB Atlas).
+- **Inteligencia Artificial:** Modelos de NLP a través de APIs de Hugging Face / OpenAI.
+- **Automatización:** n8n para la orquestación de flujos de trabajo y notificaciones.
+- **Pruebas:** Jest (unitarias) y Cypress (E2E), con una cobertura objetivo del 70%.
+- **Contenerización:** Docker para el despliegue de la aplicación.
 
+---
+
+## 📂 Estructura del Proyecto (Ejemplo)
+
+```bash
+Comprende-IA/
+│
+├── backend/
+│   ├── controllers/       # Lógica para usuarios, textos y análisis de IA
+│   ├── models/            # Esquemas de Mongoose para la base de datos
+│   ├── routes/            # Definición de las rutas de la API
+│   └── server.js          # Punto de entrada del servidor Express
+│
+└── frontend/
+    ├── src/
+    │   ├── components/    # Componentes reutilizables de React
+    │   ├── pages/         # Vistas principales de la aplicación
+    │   ├── context/       # Estado global (Autenticación, etc.)
+    │   └── services/      # Llamadas a la API del backend
+    └── ...
