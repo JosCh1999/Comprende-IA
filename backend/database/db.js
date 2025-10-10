@@ -1,22 +1,14 @@
 const mongoose = require("mongoose");
-require("dotenv").config(); // Carga las variables del archivo .env
 
-// Lee la URL de la base de datos desde las variables de entorno
-const MONGO_URI = process.env.MONGO_URI;
-
-const db = async () => {
+const dbConnection = async () => {
   try {
-    // Asegurarse de que MONGO_URI está definida
-    if (!MONGO_URI) {
-      throw new Error("No se ha definido la variable MONGO_URI en el archivo .env");
-    }
-    await mongoose.connect(MONGO_URI);
+    const mongoUri = process.env.MONGO_URI || 'mongodb://localhost:27017/mydatabase';
+    await mongoose.connect(mongoUri);
     console.log("✅ Conexión a la base de datos exitosa.");
   } catch (error) {
-    console.error("❌ Error conectando a la base de datos:", error.message);
-    // Detener el proceso si no nos podemos conectar a la BD
-    process.exit(1); 
+    console.error("❌ Error en la conexión a la base de datos:", error);
+    throw new Error("Error en la conexión a la base de datos");
   }
 };
 
-module.exports = db;
+module.exports = dbConnection;

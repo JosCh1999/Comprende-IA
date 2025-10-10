@@ -1,16 +1,15 @@
-
-    const bcrypt = require("bcrypt")
+const bcrypt = require("bcrypt")
     const Usuario = require("../model/usuario")
 
-    const register = async (req, res) =>{
+    const register = async (req, res) => {
 
         const {nombre, correo , contraseña} = req.body;
 
         Usuario.findOne({correo}).then((usuario) => {
             if(usuario){
-                return res.json({mensaje :"Ya existe un usuario con ese correo"});
+                return res.status(409).json({mensaje : "El correo ya está registrado"});
             }else if(!nombre || !correo || !contraseña){
-                return res.json({mensaje: "Falta el nombre / correo /contraseña"});
+                return res.status(400).json({mensaje: "Falta el nombre / correo /contraseña"});
             }else {
                 bcrypt.hash(contraseña, 10, (error, contraseñaHasheada) => {
                     if (error) res.json({error});
@@ -24,7 +23,7 @@
                         nuevoUsuario
                         .save()
                         .then((usuario) => {
-                            res.json({mensaje: "Usuario creado correctamente", usuario});
+                            res.status(201).json({mensaje: "Usuario registrado exitosamente", usuario});
                         })
                         .catch((error) => console.error(error));
                     }
@@ -32,6 +31,5 @@
             }
         });
     };
-
 
 module.exports = register;

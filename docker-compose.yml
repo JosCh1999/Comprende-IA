@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  app-test:
+    build:
+      context: .
+      dockerfile: Dockerfile.test
+    # La corrección clave: Especifica el directorio de trabajo para el comando
+    working_dir: /app/backend
+    depends_on:
+      - mongo-test
+    environment:
+      - MONGO_URI_TEST=mongodb://mongo-test:27017/testdb
+      - NODE_ENV=test
+    # Comando simplificado que se ejecuta en el working_dir
+    command: ["npm", "test"]
+
+  mongo-test:
+    image: mongo:5.0
+    ports:
+      - "27018:27017"
+    volumes:
+      - mongo-test-data:/data/db
+
+volumes:
+  mongo-test-data:

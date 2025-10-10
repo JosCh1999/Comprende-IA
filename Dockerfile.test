@@ -1,25 +1,19 @@
-# Usa una imagen base de Node.js
-FROM node:18
+# Usar una imagen oficial de Node.js como base
+FROM node:18-alpine
 
-# Establece el directorio de trabajo
+# 1. Establecer el directorio de trabajo principal dentro del contenedor
 WORKDIR /app
 
-# Copia los archivos de package.json y package-lock.json de ambas carpetas
-COPY backend/package*.json ./backend/
-COPY frontend/package*.json ./frontend/
+# 2. Copiar TODO el contenido de tu proyecto al directorio /app
+# Esto asegura que la estructura de carpetas (backend, frontend) se mantiene intacta
+COPY . .
 
-# Instala las dependencias del backend
-RUN cd backend && npm install
+# 3. Instalar las dependencias del backend
+# Nos movemos al directorio del backend y ejecutamos 'npm ci'
+WORKDIR /app/backend
+RUN npm ci
 
-# Instala las dependencias del frontend
-RUN cd frontend && npm install
-
-# Copia el resto del código de la aplicación
-COPY backend/ ./backend/
-COPY frontend/ ./frontend/
-
-# Expone el puerto del backend (si es necesario para pruebas de integración)
-EXPOSE 4000
-
-# Comando para ejecutar las pruebas del backend
-CMD ["npm", "test", "--prefix", "backend"]
+# 4. Instalar las dependencias del frontend
+# Nos movemos al directorio del frontend y ejecutamos 'npm ci'
+WORKDIR /app/frontend
+RUN npm ci
