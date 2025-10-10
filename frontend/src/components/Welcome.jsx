@@ -1,41 +1,44 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-
-import styles from "./styles.module.scss";
+import MainView from "./MainView"; // Importamos el nuevo componente principal
 
 const Welcome = () => {
-  const [name, setName] = useState();
-
+  const [user, setUser] = useState(null); // Guardaremos el objeto de usuario completo
   const navigate = useNavigate();
 
-  const token = localStorage.getItem("token");
-
   useEffect(() => {
-    if (token) {
+    const token = localStorage.getItem("token");
+    const userId = localStorage.getItem("userId"); // Asumimos que guardas el ID al hacer login
+
+    if (token && userId) {
       axios
-        .get(`http://localhost:4000/user`, {
+        .get(`http://localhost:4000/user/${userId}`, { // Usamos la ruta correcta con el ID
           headers: {
             token: token,
           },
         })
-        .then(({ data }) => setName(data.nombre))
-        .catch((error) => console.error(error));
+        .then(({ data }) => setUser(data)) // Guardamos todo el objeto de usuario
+        .catch((error) => {
+            console.error("Error al obtener los datos del usuario:", error);
+            // Si hay un error (token inválido, etc.), limpiamos y redirigimos
+            localStorage.removeItem("token");
+            localStorage.removeItem("userId");
+            navigate("/login");
+        });
+    } else {
+        // Si no hay token o ID, no debería estar aquí
+        navigate("/login");
     }
-  }, [token]);
+  }, [navigate]); // Agregamos navigate a las dependencias de useEffect
 
-  return (
-    <div className={styles.welcome}>
-      <h3>{name ? `¡Felicitaciones ${name}!` : "¿Que estas haciendo? 🕵️‍♂️"}</h3>
-      <h2>
-        {name ? "Te pudiste logear correctamente🎉" : "Te estamos viendo..."}
-      </h2>
-      <div className={styles.buttons}>
-        <button onClick={() => navigate("/login")}>Login</button>
-        <button onClick={() => navigate("/")}>Register</button>
-      </div>
-    </div>
-  );
+  // Mientras carga los datos del usuario, mostramos un mensaje
+  if (!user) {
+    return <div>Cargando...</div>;
+  }
+
+  // Una vez que tenemos los datos del usuario, renderizamos la vista principal
+  return <MainView user={user} />;
 };
 
 export default Welcome;

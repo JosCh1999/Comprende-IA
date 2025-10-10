@@ -1,0 +1,25 @@
+# Usa una imagen base de Node.js
+FROM node:18
+
+# Establece el directorio de trabajo
+WORKDIR /app
+
+# Copia los archivos de package.json y package-lock.json de ambas carpetas
+COPY backend/package*.json ./backend/
+COPY frontend/package*.json ./frontend/
+
+# Instala las dependencias del backend
+RUN cd backend && npm install
+
+# Instala las dependencias del frontend
+RUN cd frontend && npm install
+
+# Copia el resto del código de la aplicación
+COPY backend/ ./backend/
+COPY frontend/ ./frontend/
+
+# Expone el puerto del backend (si es necesario para pruebas de integración)
+EXPOSE 4000
+
+# Comando para ejecutar las pruebas del backend
+CMD ["npm", "test", "--prefix", "backend"]

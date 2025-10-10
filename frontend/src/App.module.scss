@@ -1,21 +1,18 @@
-* {
-  padding: 0;
+/* src/App.module.scss */
+
+/* Establecer un reseteo básico y una fuente global */
+body, html, #root {
   margin: 0;
-  font-family: Poppins;
+  padding: 0;
   box-sizing: border-box;
-  outline: none;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: #558ce0; 
 }
 
-.container {
-  width: 100vw;
-  height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: #ececec;
-}
+.appContainer {
 
-*::selection {
-  background: #6358dc;
-  color: white;
 }

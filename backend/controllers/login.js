@@ -2,40 +2,49 @@ const bcrypt = require("bcrypt");
 const Usuario = require("../model/usuario");
 const jwt = require("jsonwebtoken");
 
+
 const login = async (req, res) => {
   const { correo, contraseña } = req.body;
 
-  Usuario.findOne({ correo }).then((usuario) => {
+  try {
+    
+    const usuario = await Usuario.findOne({ correo });
     if (!usuario) {
-      return res.json({ mensaje: "Usuario no encontrado" });
+      
+      return res.status(404).json({ mensaje: "Usuario no encontrado o credenciales incorrectas." });
     }
 
-    bcrypt.compare(contraseña, usuario.contraseña).then((esCorrecta) => {
-      if (esCorrecta) {
-        const { id, nombre } = usuario;
+    
+    const esCorrecta = await bcrypt.compare(contraseña, usuario.contraseña);
+    if (!esCorrecta) {
+      
+      return res.status(401).json({ mensaje: "Usuario no encontrado o credenciales incorrectas." });
+    }
 
-        const data = {
-          id,
-          nombre,
-        };
+    
+    const { id, nombre } = usuario;
+    const data = { id, nombre };
 
-        const token = jwt.sign(data, "secreto", {
-          expiresIn: 86400 /* 24hs */,
-        });
-
-        res.json({
-          mensaje: "Usuario logeado correctamente",
-          usuario: {
-            id,
-            nombre,
-            token,
-          },
-        });
-      } else {
-        return res.json({ mensaje: "Contraseña incorrecta" });
-      }
+    
+    const token = jwt.sign(data, process.env.JWT_SECRET || 'secreto', {
+      expiresIn: '24h',
     });
-  });
+
+    
+    res.json({
+      mensaje: "Usuario logeado correctamente",
+      usuario: {
+        id,
+        nombre,
+        token,
+      },
+    });
+
+  } catch (error) {
+    
+    console.error("Error en el proceso de login:", error);
+    res.status(500).json({ mensaje: "Error interno del servidor." });
+  }
 };
 
 module.exports = login;
