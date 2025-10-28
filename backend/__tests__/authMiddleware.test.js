@@ -1,12 +1,9 @@
 const jwt = require('jsonwebtoken');
 const verifyToken = require('../middlewares/verifyToken');
 
-describe('Auth Middleware (verifyToken)', () => {
-  const mockRequest = (token) => ({
-    headers: {
-      token: token
-    },
-  });
+process.env.JWT_SECRET = process.env.JWT_SECRET || 'test-secret-key';
+
+describe('Auth Middleware - verifyToken', () => {
 
   const mockResponse = () => {
     const res = {};
@@ -17,51 +14,46 @@ describe('Auth Middleware (verifyToken)', () => {
 
   const nextFunction = jest.fn();
 
-  // Limpiar mocks después de cada prueba
   afterEach(() => {
     jest.clearAllMocks();
   });
 
-  it('debería devolver 400 si no se proporciona un token', async () => {
-    const req = mockRequest(undefined);
+  it('debería devolver 401 si no se proporciona un token', async () => {
+    const req = { headers: {} };
     const res = mockResponse();
 
     await verifyToken(req, res, nextFunction);
 
-    expect(res.status).toHaveBeenCalledWith(400);
-    expect(res.json).toHaveBeenCalledWith({ mensaje: 'Debes enviar un token' });
+    expect(res.status).toHaveBeenCalledWith(401);
+    expect(res.json).toHaveBeenCalledWith({ mensaje: 'Acceso denegado. Token no proporcionado o con formato incorrecto.' });
     expect(nextFunction).not.toHaveBeenCalled();
   });
 
-  it('debería devolver 400 si el token es inválido', async () => {
-    const invalidToken = 'este-no-es-un-token-valido';
-    const req = mockRequest(invalidToken);
+  it('debería devolver 401 si el token es inválido o malformado', async () => {
+    const req = { headers: { authorization: 'Bearer token-invalido' } };
     const res = mockResponse();
 
     await verifyToken(req, res, nextFunction);
 
-    expect(res.status).toHaveBeenCalledWith(400);
-    expect(res.json).toHaveBeenCalledWith({ mensaje: 'Token invalido' });
+    expect(res.status).toHaveBeenCalledWith(401);
+    expect(res.json).toHaveBeenCalledWith({ mensaje: 'Token inválido o expirado.' });
     expect(nextFunction).not.toHaveBeenCalled();
   });
 
-  it('debería llamar a next() si el token es válido', async () => {
-    const userData = { id: '12345', rol: 'usuario' };
-    // Usamos la misma clave secreta que en el middleware para generar el token
-    const validToken = jwt.sign(userData, 'secreto'); 
-    
-    const req = mockRequest(validToken);
+  it('debería adjuntar los datos del usuario a la \'req\' y llamar a next() si el token es válido', async () => {
+    const userData = { id: 'testUserId', nombre: 'Test User' };
+    const validToken = jwt.sign(userData, process.env.JWT_SECRET, { expiresIn: '1h' });
+
+    const req = { headers: { authorization: `Bearer ${validToken}` } };
     const res = mockResponse();
 
     await verifyToken(req, res, nextFunction);
 
-    // Verificar que next() fue llamado
+    expect(req.user).toBeDefined();
+    expect(req.user.id).toBe(userData.id);
     expect(nextFunction).toHaveBeenCalled();
-    // Verificar que no se envió ninguna respuesta de error
     expect(res.status).not.toHaveBeenCalled();
     expect(res.json).not.toHaveBeenCalled();
-    // Verificar que los datos del usuario se adjuntaron a req
-    expect(req.user.id).toBe(userData.id);
-    expect(req.user.rol).toBe(userData.rol);
   });
+
 });

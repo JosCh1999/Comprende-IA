@@ -1,3 +1,4 @@
+
 import axios from "axios";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -6,30 +7,32 @@ import styles from "./styles.module.scss";
 const Register = () => {
   const [inputs, setInputs] = useState({
     nombre: "",
-    correo: "",
-    contraseña: "",
+    email: "", // Cambiado de correo a email
+    password: "", // Cambiado de contraseña a password
   });
   const [mensaje, setMensaje] = useState();
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const { nombre, correo, contraseña } = inputs;
+  // Desestructuramos con los nuevos nombres
+  const { nombre, email, password } = inputs;
 
-  const HandleChange = (e) => {
+  const handleChange = (e) => {
     setInputs({ ...inputs, [e.target.name]: e.target.value });
   };
 
   const onSubmit = async (e) => {
     e.preventDefault();
-    if (nombre !== "" && correo !== "" && contraseña !== "") {
-      const Usuario = {
+    if (nombre !== "" && email !== "" && password !== "") {
+      // Creamos el objeto con los campos correctos para el backend
+      const usuario = {
         nombre,
-        correo,
-        contraseña,
+        email,
+        password,
       };
       setLoading(true);
       try {
-        const { data } = await axios.post("http://localhost:4000/register", Usuario);
+        const { data } = await axios.post("http://localhost:4000/register", usuario);
         setMensaje(data.mensaje);
         setTimeout(() => {
           setMensaje("");
@@ -37,12 +40,15 @@ const Register = () => {
         }, 1500);
       } catch (error) {
         console.error(error);
-        setMensaje("Hubo un error en el registro.");
+        // Mostramos un mensaje más específico si está disponible
+        const errorMsg = error.response?.data?.mensaje || "Hubo un error en el registro.";
+        setMensaje(errorMsg);
         setTimeout(() => {
           setMensaje("");
-        }, 1500);
+        }, 2500);
       }
-      setInputs({ nombre: "", correo: "", contraseña: "" });
+      // Limpiamos el formulario después del intento
+      setInputs({ nombre: "", email: "", password: "" });
       setLoading(false);
     }
   };
@@ -51,12 +57,12 @@ const Register = () => {
     <div className={styles.authContainer}>
       <form className={styles.authForm} onSubmit={onSubmit}>
         <h2 className={styles.authTitle}>Crear una Cuenta</h2>
-        {mensaje && <p>{mensaje}</p>}
+        {mensaje && <p className={styles.errorMessage}>{mensaje}</p>}
         <div className={styles.inputGroup}>
           <label className={styles.inputLabel} htmlFor="nombre">Nombre Completo</label>
           <input
             className={styles.inputField}
-            onChange={HandleChange}
+            onChange={handleChange}
             value={nombre}
             name="nombre"
             id="nombre"
@@ -67,13 +73,14 @@ const Register = () => {
           />
         </div>
         <div className={styles.inputGroup}>
-          <label className={styles.inputLabel} htmlFor="correo">Correo Electrónico</label>
+          {/* Actualizado para 'email' */}
+          <label className={styles.inputLabel} htmlFor="email">Correo Electrónico</label>
           <input
             className={styles.inputField}
-            onChange={HandleChange}
-            value={correo}
-            name="correo"
-            id="correo"
+            onChange={handleChange}
+            value={email}
+            name="email"
+            id="email"
             type="email"
             placeholder="ejemplo@correo.com"
             autoComplete="off"
@@ -81,13 +88,14 @@ const Register = () => {
           />
         </div>
         <div className={styles.inputGroup}>
-          <label className={styles.inputLabel} htmlFor="contraseña">Contraseña</label>
+          {/* Actualizado para 'password' */}
+          <label className={styles.inputLabel} htmlFor="password">Contraseña</label>
           <input
             className={styles.inputField}
-            onChange={HandleChange}
-            value={contraseña}
-            name="contraseña"
-            id="contraseña"
+            onChange={handleChange}
+            value={password}
+            name="password"
+            id="password"
             type="password"
             placeholder="Crea una contraseña segura"
             autoComplete="off"

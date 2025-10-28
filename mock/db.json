@@ -1,0 +1,36 @@
+{
+  "usuarios": [
+    {
+      "id": "1",
+      "nombre": "Elena Valdez",
+      "correo": "elena.v@example.com"
+    },
+    {
+      "id": "2",
+      "nombre": "Mateo Rojas",
+      "correo": "mateo.r@example.com"
+    },
+    {
+      "id": "3",
+      "nombre": "Sofía Castillo",
+      "correo": "sofia.c@example.com"
+    }
+  ],
+  "textos": [
+    {
+      "id": "101",
+      "ownerId": "1",
+      "text": "La historia de la computación se remonta a miles de años atrás con el ábaco, pero la era moderna comenzó con Charles Babbage y su máquina analítica. Este fue el primer concepto de un dispositivo de computación programable."
+    },
+    {
+      "id": "102",
+      "ownerId": "2",
+      "text": "Las redes neuronales, inspiradas en el cerebro humano, son un pilar del aprendizaje profundo. Consisten en capas de nodos interconectados que procesan datos para reconocer patrones complejos, como imágenes o lenguaje."
+    },
+    {
+      "id": "103",
+      "ownerId": "1",
+      "text": "La ética en la inteligencia artificial es un campo de estudio crucial. A medida que los sistemas de IA se vuelven más autónomos, debemos asegurarnos de que sus decisiones sean justas, transparentes y alineadas con los valores humanos."
+    }
+  ]
+}

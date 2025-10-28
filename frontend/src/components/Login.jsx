@@ -1,30 +1,34 @@
+
 import axios from "axios";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import styles from "./styles.module.scss";
 
 const Login = () => {
-  const [inputs, setInputs] = useState({ correo: "", contraseña: "" });
+  // Cambiamos el estado para usar email y password
+  const [inputs, setInputs] = useState({ email: "", password: "" });
   const [mensaje, setMensaje] = useState();
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const { correo, contraseña } = inputs;
+  // Desestructuramos con los nuevos nombres
+  const { email, password } = inputs;
 
-  const HandleChange = (e) => {
+  const handleChange = (e) => {
     setInputs({ ...inputs, [e.target.name]: e.target.value });
   };
 
   const onSubmit = async (e) => {
     e.preventDefault();
-    if (correo !== "" && contraseña !== "") {
-      const Usuario = {
-        correo,
-        contraseña,
+    if (email !== "" && password !== "") {
+      // Creamos el objeto con los campos correctos para el backend
+      const usuario = {
+        email,
+        password,
       };
       setLoading(true);
       try {
-        const { data } = await axios.post("http://localhost:4000/login", Usuario);
+        const { data } = await axios.post("http://localhost:4000/login", usuario);
         localStorage.setItem("token", data?.usuario.token);
         localStorage.setItem("userId", data?.usuario.id);
         setMensaje(data.mensaje);
@@ -34,12 +38,15 @@ const Login = () => {
         }, 1500);
       } catch (error) {
         console.error(error);
-        setMensaje("Correo o contraseña incorrecta");
+        // Usamos el mensaje de error del backend para más claridad
+        const errorMsg = error.response?.data?.mensaje || "Credenciales incorrectas.";
+        setMensaje(errorMsg);
         setTimeout(() => {
           setMensaje("");
-        }, 1500);
+        }, 2500);
       }
-      setInputs({ correo: "", contraseña: "" });
+      // Limpiamos el formulario después del intento
+      setInputs({ email: "", password: "" });
       setLoading(false);
     }
   };
@@ -48,15 +55,16 @@ const Login = () => {
     <div className={styles.authContainer}>
       <form className={styles.authForm} onSubmit={onSubmit}>
         <h2 className={styles.authTitle}>Inicio de Sesión</h2>
-        {mensaje && <p>{mensaje}</p>}
+        {mensaje && <p className={styles.errorMessage}>{mensaje}</p>}
         <div className={styles.inputGroup}>
-          <label className={styles.inputLabel} htmlFor="correo">Correo Electrónico</label>
+          {/* Actualizado para 'email' */}
+          <label className={styles.inputLabel} htmlFor="email">Correo Electrónico</label>
           <input
             className={styles.inputField}
-            onChange={HandleChange}
-            value={correo}
-            name="correo"
-            id="correo"
+            onChange={handleChange}
+            value={email}
+            name="email"
+            id="email"
             type="email"
             placeholder="ejemplo@correo.com"
             autoComplete="off"
@@ -64,13 +72,14 @@ const Login = () => {
           />
         </div>
         <div className={styles.inputGroup}>
-          <label className={styles.inputLabel} htmlFor="contraseña">Contraseña</label>
+          {/* Actualizado para 'password' */}
+          <label className={styles.inputLabel} htmlFor="password">Contraseña</label>
           <input
             className={styles.inputField}
-            onChange={HandleChange}
-            value={contraseña}
-            name="contraseña"
-            id="contraseña"
+            onChange={handleChange}
+            value={password}
+            name="password"
+            id="password"
             type="password"
             placeholder="Tu contraseña"
             autoComplete="off"

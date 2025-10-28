@@ -1,82 +1,85 @@
 const request = require('supertest');
 const mongoose = require('mongoose');
-const { app, server } = require('../App');
+const { app } = require('../App'); // Import only the app
+const User = require('../model/usuario');
 const Text = require('../model/text');
+const jwt = require('jsonwebtoken');
+
+let server;
+let token;
+let userId;
 
 beforeAll(async () => {
-  const mongoUri = process.env.MONGO_URI_TEST || 'mongodb://localhost:27017/testdb-text';
+  const mongoUri = process.env.MONGO_URI || 'mongodb://localhost:27017/testdb_texts';
   await mongoose.connect(mongoUri, { useNewUrlParser: true, useUnifiedTopology: true });
-});
+  
+  server = app.listen(); // Start server on a random available port
 
-afterEach(async () => {
+  await User.deleteMany({});
   await Text.deleteMany({});
+
+  const user = await new User({ nombre: 'Text User', correo: 'textuser@example.com', contraseña: 'password123' }).save();
+  userId = user._id;
+  token = jwt.sign({ id: userId, nombre: user.nombre }, process.env.JWT_SECRET || 'secret', { expiresIn: '1h' });
 });
 
+// MODERNIZED afterAll BLOCK
 afterAll(async () => {
   await mongoose.connection.close();
-  server.close();
+  await new Promise(resolve => server.close(resolve));
 });
 
-describe('Text API - /api/save-text', () => {
-  it('debería guardar el texto exitosamente cuando el texto es válido', async () => {
-    const response = await request(app)
-      .post('/api/save-text')
-      .send({ text: 'Este es un texto de prueba.' });
+describe('API de Textos - POST /textos', () => {
 
-    expect(response.statusCode).toBe(201);
-    const savedText = await Text.findById(response.body.textId);
-    expect(savedText).not.toBeNull();
-    expect(savedText.content).toBe('Este es un texto de prueba.');
+  afterEach(async () => {
+    await Text.deleteMany({});
   });
 
-  it('no debería guardar el texto si el campo de texto está vacío', async () => {
+  it('debería crear un nuevo texto exitosamente con un token válido', async () => {
     const response = await request(app)
-      .post('/api/save-text')
-      .send({ text: '   ' });
-
-    expect(response.statusCode).toBe(400);
-    expect(response.body.message).toBe('El texto no puede estar vacío.');
-  });
-});
-
-describe('Text API - /api/upload', () => {
-  it('debería subir y procesar un archivo .txt exitosamente', async () => {
-    const fileContent = 'Contenido de prueba del archivo.';
-    const response = await request(app)
-      .post('/api/upload')
-      .attach('file', Buffer.from(fileContent), {
-        filename: 'test.txt',
-        contentType: 'text/plain'
+      .post('/textos')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ 
+        filename: 'mi_archivo.txt',
+        content: 'Este es un texto de prueba con filename.'
       });
 
     expect(response.statusCode).toBe(201);
-    expect(response.body.message).toBe('¡Archivo subido y procesado con éxito!');
-    expect(response.body.textId).toBeDefined();
-
-    const savedText = await Text.findById(response.body.textId);
-    expect(savedText).not.toBeNull();
-    expect(savedText.content).toBe(fileContent);
-    expect(savedText.filename).toBe('test.txt');
+    expect(response.body.mensaje).toBe('Texto creado exitosamente');
+    expect(response.body.texto).toHaveProperty('filename', 'mi_archivo.txt');
+    expect(response.body.texto).toHaveProperty('content', 'Este es un texto de prueba con filename.');
   });
 
-  it('debería devolver 400 si no se sube ningún archivo', async () => {
-    const response = await request(app).post('/api/upload');
-
-    expect(response.statusCode).toBe(400);
-    expect(response.body.message).toBe('No se ha subido ningún archivo.');
-  });
-
-  it('debería devolver 400 si el tipo de archivo no es .txt', async () => {
+  it('debería devolver un error 401 (No Autorizado) si no se proporciona un token', async () => {
     const response = await request(app)
-      .post('/api/upload')
-      .attach('file', Buffer.from('fake image data'), {
-        filename: 'image.png',
-        contentType: 'image/png'
+      .post('/textos')
+      .send({ 
+        filename: 'sin_token.txt',
+        content: 'Este contenido no debería guardarse.'
       });
 
-    expect(response.statusCode).toBe(400);
-    expect(response.body.message).toBe('Solo se admiten archivos .txt');
+    expect(response.statusCode).toBe(401);
+    expect(response.body.mensaje).toBe('Acceso denegado. Token no proporcionado o con formato incorrecto.');
   });
-  
-});
 
+  it('debería devolver un error 400 (Bad Request) si falta el campo \'filename\'', async () => {
+    const response = await request(app)
+      .post('/textos')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ content: 'Contenido sin filename.' });
+
+    expect(response.statusCode).toBe(400);
+    expect(response.body).toHaveProperty('mensaje');
+  });
+
+  it('debería devolver un error 400 (Bad Request) si falta el campo \'content\'', async () => {
+    const response = await request(app)
+      .post('/textos')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ filename: 'sin_contenido.txt' });
+
+    expect(response.statusCode).toBe(400);
+    expect(response.body).toHaveProperty('mensaje');
+  });
+
+});

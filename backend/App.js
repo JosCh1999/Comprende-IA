@@ -1,44 +1,32 @@
-require('dotenv').config(); // Carga las variables de entorno
+require('dotenv').config();
+const express = require('express');
+const cors = require('cors');
+const dbConnection = require('./database/db');
+const authRouter = require('./routes/authRouter');
+const textRouter = require('./routes/textRouter');
 
-const express = require("express");
-const cors = require("cors");
-const multer = require('multer');
-const dbConnection = require("./database/db"); // Importamos la función de conexión
+// Función para configurar y devolver la app
+const create_app = () => {
+    const app = express();
 
-const authControllers = require('./controllers');
-const { uploadText, saveText } = require('./controllers/textController'); 
-const { generateQuestions, detectFallacies } = require('./controllers/aiController');
-const verifyToken = require("./middlewares/verifyToken");
+    // Middlewares
+    app.use(cors());
+    app.use(express.json());
 
-const app = express();
-
-// --- Middlewares ---
-app.use(cors());
-app.use(express.json());
-
-// --- Configuración de Multer ---
-const storage = multer.memoryStorage();
-const upload = multer({ storage: storage });
-
-// --- Rutas ---
-app.get('/user/:id', authControllers.getUserById);
-app.post('/register', authControllers.register);
-app.post('/login', authControllers.login);
-app.post('/api/upload', upload.single('file'), uploadText);
-app.post('/api/save-text', saveText);
-app.get('/api/analyze/:textId/questions', generateQuestions);
-app.get('/api/analyze/:textId/fallacies', detectFallacies);
-
-// --- Inicio del Servidor ---
-const PORT = process.env.PORT || 4000;
-
-const server = app.listen(PORT, () => {
-    console.log(`Servidor escuchando en el puerto ${PORT}`);
-    // Solo conectar a la BD si NO estamos en entorno de prueba
+    // Conexión a la base de datos
+    // Se ejecutará solo una vez cuando se cree la app
     if (process.env.NODE_ENV !== 'test') {
-        dbConnection(); // Llamamos a la función de conexión
+        dbConnection();
     }
-});
 
-// Exportamos la app y el servidor
-module.exports = { app, server };
+    // Rutas
+    app.use('/auth', authRouter);
+    app.use('/textos', textRouter);
+
+    return app;
+};
+
+const app = create_app();
+
+// Exportamos solo la app para que pueda ser utilizada por las pruebas y el servidor
+module.exports = { app };

@@ -1,18 +1,33 @@
-const jwt = require("jsonwebtoken");
+const jwt = require('jsonwebtoken');
 
-const verifyToken = async (req, res, next) => {
-  const token = req.headers["token"];
+const verifyToken = (req, res, next) => {
+  // El estándar es enviar el token en el header 'Authorization' con el formato "Bearer TOKEN".
+  const authHeader = req.headers['authorization'];
 
-  if (token) {
-    jwt.verify(token, "secreto", (error, data) => {
-      if (error) return res.status(400).json({ mensaje: "Token invalido" });
-      else {
-        req.user = data;
-        next();
-      }
-    });
-  } else {
-    res.status(400).json({ mensaje: "Debes enviar un token" });
+  // 1. Verificamos si el header 'authorization' existe y si empieza con 'Bearer '
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ mensaje: 'Acceso denegado. Token no proporcionado o con formato incorrecto.' });
+  }
+
+  // 2. Extraemos el token, eliminando la parte "Bearer " del string.
+  const token = authHeader.split(' ')[1];
+
+  if (!token) {
+    return res.status(401).json({ mensaje: 'Token malformado o ausente.' });
+  }
+
+  try {
+    // 3. Verificamos el token usando la clave secreta de las variables de entorno (.env)
+    const secret = process.env.JWT_SECRET || 'secret'; // Usamos un fallback por si acaso
+    const decoded = jwt.verify(token, secret);
+    
+    // 4. Adjuntamos los datos del usuario (decodificados del token) al objeto `request`.
+    req.user = decoded;
+    next(); // El token es válido, continuamos hacia el controlador.
+
+  } catch (error) {
+    // Si jwt.verify falla (token expirado, firma inválida, etc.)
+    res.status(401).json({ mensaje: 'Token inválido o expirado.' });
   }
 };
 

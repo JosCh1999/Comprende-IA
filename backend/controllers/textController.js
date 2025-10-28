@@ -1,59 +1,82 @@
 const Text = require('../model/text');
+const Usuario = require('../model/usuario');
 
-const uploadText = async (req, res) => {
-    if (!req.file) {
-        return res.status(400).json({ message: "No se ha subido ningún archivo." });
-    }
+// @desc    Crear un nuevo texto
+// @route   POST /textos
+// @access  Privado
+const crearTexto = async (req, res) => {
+  const { content } = req.body;
 
-    if (req.file.mimetype !== 'text/plain') {
-        return res.status(400).json({ message: "Solo se admiten archivos .txt" });
-    }
+  if (!content || content.trim() === '') {
+    return res.status(400).json({ mensaje: 'El contenido no puede estar vacío' });
+  }
 
-    try {
-        const content = req.file.buffer.toString('utf-8');
+  try {
+    // El ID del usuario se obtiene del token decodificado (añadido por verifyToken)
+    const userId = req.user.id;
 
-        const newText = new Text({
-            filename: req.file.originalname,
-            content: content
-        });
+    const newText = new Text({
+      content,
+      owner: userId, // Asociamos el texto con el usuario propietario
+    });
 
-        await newText.save();
+    const textoGuardado = await newText.save();
 
-        res.status(201).json({ 
-            message: "¡Archivo subido y procesado con éxito!",
-            textId: newText._id
-        });
-
-    } catch (error) {
-        console.error("Error al guardar el texto:", error);
-        res.status(500).json({ message: "Error interno del servidor." });
-    }
+    res.status(201).json({
+      mensaje: 'Texto creado exitosamente',
+      texto: textoGuardado,
+    });
+  } catch (error) {
+    console.error('Error al crear el texto:', error);
+    res.status(500).json({ mensaje: 'Error interno del servidor' });
+  }
 };
 
-const saveText = async (req, res) => {
-    const { text } = req.body;
+// @desc    Obtener todos los textos del usuario logueado
+// @route   GET /textos
+// @access  Privado
+const obtenerTextos = async (req, res) => {
+  try {
+    // Busca todos los textos cuyo campo 'owner' coincida con el ID del usuario del token
+    const textos = await Text.find({ owner: req.user.id });
 
-    if (!text || typeof text !== 'string' || text.trim() === '') {
-        return res.status(400).json({ message: "El texto no puede estar vacío." });
+    if (!textos) {
+      return res.status(404).json({ mensaje: 'No se encontraron textos para este usuario' });
     }
 
-    try {
-        const newText = new Text({
-            filename: `texto-${Date.now()}.txt`,
-            content: text
-        });
-
-        await newText.save();
-
-        res.status(201).json({
-            message: "Texto guardado con éxito!",
-            textId: newText._id
-        });
-
-    } catch (error) {
-        console.error("Error al guardar el texto:", error);
-        res.status(500).json({ message: "Error interno del servidor al guardar el texto." });
-    }
+    res.json(textos);
+  } catch (error) {
+    console.error('Error al obtener los textos:', error);
+    res.status(500).json({ mensaje: 'Error interno del servidor' });
+  }
 };
 
-module.exports = { uploadText, saveText };
+// @desc    Obtener un texto específico por su ID
+// @route   GET /textos/:id
+// @access  Privado
+const obtenerTextoPorId = async (req, res) => {
+  try {
+    const texto = await Text.findById(req.params.id);
+
+    if (!texto) {
+      return res.status(404).json({ mensaje: 'Texto no encontrado' });
+    }
+
+    // Verificamos que el texto pertenezca al usuario que hace la solicitud
+    if (texto.owner.toString() !== req.user.id) {
+      // Usamos 404 para no revelar la existencia del recurso a usuarios no autorizados
+      return res.status(404).json({ mensaje: 'Texto no encontrado' });
+    }
+
+    res.json(texto);
+  } catch (error) {
+    console.error('Error al obtener el texto por ID:', error);
+    // Si el ID tiene un formato inválido, Mongoose arroja un error
+    if (error.kind === 'ObjectId') {
+        return res.status(404).json({ message: 'Texto no encontrado (ID inválido)' });
+    }
+    res.status(500).json({ mensaje: 'Error interno del servidor' });
+  }
+};
+
+module.exports = { crearTexto, obtenerTextos, obtenerTextoPorId };

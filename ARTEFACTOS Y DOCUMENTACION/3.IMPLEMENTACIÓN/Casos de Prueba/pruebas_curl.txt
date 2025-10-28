@@ -1,0 +1,86 @@
+NOTA IMPORTANTE PARA WINDOWS CMD:
+Todos los comandos a continuación están formateados para ser copiados y pegados directamente en la terminal `cmd.exe` de Windows. Utilizan comillas dobles escapadas (\") para los datos JSON, como requiere CMD.
+
+== 1. REGISTRO DE USUARIO EXITOSO ==
+Descripción: Esta prueba verifica la correcta creación de un nuevo usuario. Se envía un nombre, un correo electrónico único y una contraseña. Se espera que la API responda con un mensaje de éxito y los datos del usuario recién creado.
+
+Comando (para Windows CMD):
+curl -X POST http://localhost:4000/auth/register -H "Content-Type: application/json" -d "{\"nombre\": \"Usuario de Prueba CMD\", \"email\": \"prueba.cmd@example.com\", \"password\": \"clave123\"}"
+
+Respuesta Esperada:
+{
+  "mensaje": "Usuario registrado exitosamente",
+  "usuario": {
+    "_id": "...",
+    "nombre": "Usuario de Prueba CMD",
+    "correo": "prueba.cmd@example.com"
+  }
+}
+
+== 2. REGISTRO CON EMAIL DUPLICADO ==
+Descripción: Esta prueba asegura que el sistema previene la duplicación de usuarios. Al intentar registrar un nuevo usuario con un correo electrónico que ya existe, la API debe devolver un error de conflicto (código 409).
+
+Comando (para Windows CMD):
+curl -X POST http://localhost:4000/auth/register -H "Content-Type: application/json" -d "{\"nombre\": \"Otro Usuario\", \"email\": \"prueba.cmd@example.com\", \"password\": \"clave456\"}"
+
+Respuesta Esperada:
+{
+  "mensaje": "El email ya está registrado"
+}
+
+== 3. INICIO DE SESIÓN EXITOSO ==
+Descripción: Valida el proceso de autenticación. Un usuario ya registrado envía sus credenciales. Si son correctas, el servidor debe generar un JSON Web Token (JWT) para autorizar futuras peticiones.
+
+Comando (para Windows CMD):
+curl -X POST http://localhost:4000/auth/login -H "Content-Type: application/json" -d "{\"email\": \"prueba.cmd@example.com\", \"password\": \"clave123\"}"
+
+Respuesta Esperada:
+{
+  "mensaje": "Usuario logueado exitosamente",
+  "usuario": {
+    "id": "...",
+    "nombre": "Usuario de Prueba CMD",
+    "token": "..."
+  }
+}
+
+== 4. INICIO DE SESIÓN CON CREDENCIALES INCORRECTAS ==
+Descripción: Verifica el manejo de intentos de login fallidos. Al proporcionar una contraseña incorrecta, la API debe denegar el acceso con un error 401.
+
+Comando (para Windows CMD):
+curl -X POST http://localhost:4000/auth/login -H "Content-Type: application/json" -d "{\"email\": \"prueba.cmd@example.com\", \"password\": \"contraseñaincorrecta\"}"
+
+Respuesta Esperada:
+{
+  "mensaje": "Credenciales incorrectas"
+}
+
+== 5. CREACIÓN DE TEXTO EXITOSA (RUTA PROTEGIDA) ==
+Descripción: Esta prueba es la definitiva. Valida la creación de un recurso 'texto' usando un token JWT válido. El servidor debe verificar el token y luego aceptar los campos 'filename' y 'content' para crear la entrada en la base de datos.
+
+Comando (para Windows CMD) - RECUERDA REEMPLAZAR <TU_TOKEN_JWT>:
+curl -X POST http://localhost:4000/textos -H "Content-Type: application/json" -H "Authorization: Bearer <TU_TOKEN_JWT>" -d "{\"filename\": \"mi_archivo.txt\", \"content\": \"¡Funcionó!\"}"
+
+Respuesta Esperada:
+{
+  "mensaje": "Texto creado exitosamente",
+  "texto": {
+    "_id": "...",
+    "filename": "mi_archivo.txt",
+    "content": "¡Funcionó!",
+    "createdAt": "...",
+    "__v": 0
+  }
+}
+
+
+== 6. INTENTO DE CREACIÓN DE TEXTO SIN TOKEN ==
+Descripción: Esta prueba de seguridad verifica que la ruta de creación de textos está correctamente protegida. Al no enviar un token de autorización, la API debe rechazar la petición con un error 401, demostrando que solo usuarios autenticados pueden crear recursos.
+
+Comando (para Windows CMD):
+curl -X POST http://localhost:4000/textos -H "Content-Type: application/json" -d "{\"filename\": \"archivo_no_autorizado.txt\", \"content\": \"Este intento debería fallar.\"}"
+
+Respuesta Esperada:
+{
+    "mensaje": "No se proporcionó token. Acceso denegado."
+}
