@@ -1,17 +1,26 @@
+
 const express = require('express');
 const router = express.Router();
 
-// Importamos los componentes necesarios
-const createText = require('../controllers/createText'); // El controlador para crear textos.
-const verifyToken = require('../middlewares/verifyToken'); // El middleware para proteger la ruta.
+// Importamos los controladores y middlewares necesarios
+const textController = require('../controllers/textController.js');
+const verifyToken = require('../middlewares/verifyToken.js');
+const upload = require('../middlewares/upload.js');
 
-// Definimos la ruta para la creación de textos.
-// POST /textos/
-// Esta ruta está protegida. Primero se ejecuta `verifyToken` y si el token es válido, se pasa a `createText`.
-router.post('/', verifyToken, createText);
+// --- Rutas de Textos ---
 
-// Aquí podríamos añadir más rutas en el futuro, como:
-// router.get('/', verifyToken, getAllTexts); // Para obtener todos los textos del usuario.
-// router.get('/:id', verifyToken, getTextById); // Para obtener un texto específico.
+// HU-01: Subir un archivo de texto.
+router.post('/upload', verifyToken, upload.single('file'), textController.uploadText);
+
+// Crear un nuevo texto (vía JSON, para pruebas).
+router.post('/', verifyToken, textController.createText);
+
+// Obtener todos los textos del usuario.
+router.get('/', verifyToken, textController.getAllTexts);
+
+// --- ¡NUEVA RUTA! ---
+// Obtener un texto específico por su ID. Debe ir antes que rutas más generales.
+router.get('/:id', verifyToken, textController.getTextById);
+
 
 module.exports = router;

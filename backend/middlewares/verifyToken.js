@@ -21,8 +21,9 @@ const verifyToken = (req, res, next) => {
     const secret = process.env.JWT_SECRET || 'secret'; // Usamos un fallback por si acaso
     const decoded = jwt.verify(token, secret);
     
-    // 4. Adjuntamos los datos del usuario (decodificados del token) al objeto `request`.
-    req.user = decoded;
+    // 4. CORRECCIÓN: Adjuntamos el ID del usuario (decodificado del token) al objeto `request`.
+    req.userId = decoded.id; // Antes decía req.user = decoded
+    
     next(); // El token es válido, continuamos hacia el controlador.
 
   } catch (error) {

@@ -1,82 +1,98 @@
-const Text = require('../model/text');
-const Usuario = require('../model/usuario');
 
-// @desc    Crear un nuevo texto
-// @route   POST /textos
-// @access  Privado
-const crearTexto = async (req, res) => {
-  const { content } = req.body;
+const textService = require('../services/textService.js');
+const pdfParse = require('pdf-parse');
+const mammoth = require('mammoth');
 
-  if (!content || content.trim() === '') {
-    return res.status(400).json({ mensaje: 'El contenido no puede estar vacío' });
-  }
+const uploadText = async (req, res) => {
+    try {
+        if (!req.file) return res.status(400).json({ message: 'No se ha subido ningún archivo.' });
 
-  try {
-    // El ID del usuario se obtiene del token decodificado (añadido por verifyToken)
-    const userId = req.user.id;
+        const { buffer, mimetype, originalname } = req.file;
+        let content = '';
 
-    const newText = new Text({
-      content,
-      owner: userId, // Asociamos el texto con el usuario propietario
-    });
+        if (mimetype === 'application/pdf') {
+            const data = await pdfParse(buffer);
+            content = data.text;
+        } else if (mimetype === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
+            const { value } = await mammoth.extractRawText({ buffer });
+            content = value;
+        } else if (mimetype === 'text/plain') {
+            content = buffer.toString('utf-8');
+        }
 
-    const textoGuardado = await newText.save();
+        if (!content.trim()) {
+            return res.status(400).json({ message: 'El archivo está vacío o no se pudo leer el contenido.' });
+        }
 
-    res.status(201).json({
-      mensaje: 'Texto creado exitosamente',
-      texto: textoGuardado,
-    });
-  } catch (error) {
-    console.error('Error al crear el texto:', error);
-    res.status(500).json({ mensaje: 'Error interno del servidor' });
-  }
+        const newText = await textService.createText(originalname, content, req.userId);
+        res.status(201).json({ message: "Archivo procesado exitosamente.", text: newText });
+
+    } catch (error) {
+        // Si el servicio lanza el error de duplicado (409), lo pasamos al cliente.
+        if (error.statusCode === 409) {
+            return res.status(409).json({ message: error.message });
+        }
+        // Para cualquier otro error, respondemos con un error 500 genérico.
+        console.error("Error en uploadText controller:", error);
+        res.status(500).json({ message: "Error interno del servidor al procesar el archivo." });
+    }
 };
 
-// @desc    Obtener todos los textos del usuario logueado
-// @route   GET /textos
-// @access  Privado
-const obtenerTextos = async (req, res) => {
-  try {
-    // Busca todos los textos cuyo campo 'owner' coincida con el ID del usuario del token
-    const textos = await Text.find({ owner: req.user.id });
-
-    if (!textos) {
-      return res.status(404).json({ mensaje: 'No se encontraron textos para este usuario' });
+const createText = async (req, res) => {
+    try {
+        const { filename, content } = req.body;
+        const newText = await textService.createText(filename, content, req.userId);
+        res.status(201).json({ message: "Texto creado exitosamente", text: newText });
+    } catch (error) {
+        // Manejo específico para el error de duplicado.
+        if (error.statusCode === 409) {
+            return res.status(409).json({ message: error.message });
+        }
+        // Manejo para errores de validación (datos faltantes).
+        if (error.message.startsWith('Faltan datos')) {
+            return res.status(400).json({ message: error.message });
+        }
+        // Error genérico para otros casos.
+        console.error("Error en createText controller:", error);
+        res.status(500).json({ message: error.message });
     }
-
-    res.json(textos);
-  } catch (error) {
-    console.error('Error al obtener los textos:', error);
-    res.status(500).json({ mensaje: 'Error interno del servidor' });
-  }
 };
 
-// @desc    Obtener un texto específico por su ID
-// @route   GET /textos/:id
-// @access  Privado
-const obtenerTextoPorId = async (req, res) => {
-  try {
-    const texto = await Text.findById(req.params.id);
-
-    if (!texto) {
-      return res.status(404).json({ mensaje: 'Texto no encontrado' });
+const getAllTexts = async (req, res) => {
+    try {
+        const userTexts = await textService.getAllTextsByOwner(req.userId);
+        res.status(200).json({
+            message: "Textos del usuario obtenidos exitosamente",
+            texts: userTexts
+        });
+    } catch (error) {
+        res.status(500).json({ message: "Error interno del servidor al obtener los textos." });
     }
-
-    // Verificamos que el texto pertenezca al usuario que hace la solicitud
-    if (texto.owner.toString() !== req.user.id) {
-      // Usamos 404 para no revelar la existencia del recurso a usuarios no autorizados
-      return res.status(404).json({ mensaje: 'Texto no encontrado' });
-    }
-
-    res.json(texto);
-  } catch (error) {
-    console.error('Error al obtener el texto por ID:', error);
-    // Si el ID tiene un formato inválido, Mongoose arroja un error
-    if (error.kind === 'ObjectId') {
-        return res.status(404).json({ message: 'Texto no encontrado (ID inválido)' });
-    }
-    res.status(500).json({ mensaje: 'Error interno del servidor' });
-  }
 };
 
-module.exports = { crearTexto, obtenerTextos, obtenerTextoPorId };
+const getTextById = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const userId = req.userId;
+        const text = await textService.getTextByIdAndOwner(id, userId);
+        if (!text) {
+            return res.status(404).json({ message: 'Texto no encontrado o no tienes permiso para verlo.' });
+        }
+        res.status(200).json({
+            message: "Texto obtenido exitosamente",
+            text: text
+        });
+    } catch (error) {
+        if (error.kind === 'ObjectId') {
+            return res.status(400).json({ message: 'El ID del texto no es válido.' });
+        }
+        res.status(500).json({ message: "Error interno del servidor al obtener el texto." });
+    }
+};
+
+module.exports = {
+    uploadText,
+    createText,
+    getAllTexts,
+    getTextById,
+};

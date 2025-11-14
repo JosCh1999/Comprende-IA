@@ -1,16 +1,17 @@
 const express = require('express');
 const router = express.Router();
 
-// Importamos los controladores de autenticación
-const register = require('../controllers/register');
-const login = require('../controllers/login');
+// 1. Importamos el NUEVO controlador unificado
+const authController = require('../controllers/authController.js');
 
 // Ruta para registrar un nuevo usuario
 // POST /auth/register
-router.post('/register', register);
+// Ahora apunta al método 'register' de authController
+router.post('/register', authController.register);
 
 // Ruta para iniciar sesión
 // POST /auth/login
-router.post('/login', login);
+// Ahora apunta al método 'login' de authController
+router.post('/login', authController.login);
 
 module.exports = router;
