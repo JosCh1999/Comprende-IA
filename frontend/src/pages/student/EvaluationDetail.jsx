@@ -2,10 +2,11 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import DashboardLayout from '../../layouts/DashboardLayout';
+import * as studentService from '../../services/studentService';
 
 // --- Iconos ---
 const UploadIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>;
-const EvaluationsIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /><path strokeLinecap="round" strokeLinejoin="round" d="M9 17v-4.586a1 1 0 01.293-.707l5.414-5.414a1 1 0 01.707-.293h4.586"/></svg>;
+const EvaluationsIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /><path strokeLinecap="round" strokeLinejoin="round" d="M9 17v-4.586a1 1 0 01.293-.707l5.414-5.414a1 1 0 01.707-.293h4.586" /></svg>;
 const ProgressIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>;
 
 const EvaluationDetail = () => {
@@ -22,7 +23,8 @@ const EvaluationDetail = () => {
     const [error, setError] = useState(null);
     const [userAnswers, setUserAnswers] = useState({});
     const [isSubmitting, setIsSubmitting] = useState(false);
-    
+    const [recommendation, setRecommendation] = useState(null);
+
     // --- Lógica de Carga de Datos ---
     const fetchEvaluationData = useCallback(async () => {
         setLoading(true);
@@ -61,7 +63,21 @@ const EvaluationDetail = () => {
 
     useEffect(() => {
         fetchEvaluationData();
+        fetchRecommendation();
     }, [fetchEvaluationData]);
+
+    // --- Fetch Teacher Recommendation ---
+    const fetchRecommendation = async () => {
+        try {
+            const response = await studentService.getTextRecommendation(textId);
+            if (response.recommendation) {
+                setRecommendation(response.recommendation);
+            }
+        } catch (err) {
+            console.error('Error al cargar recomendación:', err);
+            // No mostrar error al usuario, simplemente no mostrar la sección
+        }
+    };
 
     // --- Lógica de Envío de Respuestas ---
     const handleAnswerChange = (preguntaId, value) => {
@@ -73,7 +89,7 @@ const EvaluationDetail = () => {
         const answersToSubmit = preguntas
             .map(p => ({ preguntaId: p._id, questionText: p.question, userAnswer: userAnswers[p._id] || '' }))
             .filter(a => a.userAnswer.trim() !== '');
-        
+
         if (answersToSubmit.length < preguntas.length) {
             alert('Por favor, responde todas las preguntas antes de enviar.');
             return;
@@ -101,7 +117,7 @@ const EvaluationDetail = () => {
             setIsSubmitting(false);
         }
     };
-    
+
     // --- Renderizado Condicional del Contenido ---
     const renderContent = () => {
         if (loading) return <p className="text-center text-gray-400">Cargando detalles de la evaluación...</p>;
@@ -126,7 +142,7 @@ const EvaluationDetail = () => {
                     </div>
                 )}
                 {falacias && falacias.length > 0 && (
-                     <div className="mb-8">
+                    <div className="mb-8">
                         <h3 className="text-2xl font-bold text-red-400 mb-4">Falacias Detectadas</h3>
                         <ul className="space-y-4">
                             {falacias.map((falacia, index) => (
@@ -138,7 +154,7 @@ const EvaluationDetail = () => {
                         </ul>
                     </div>
                 )}
-                
+
                 {/* Sección de Preguntas (renderizado condicional) */}
                 <div className="mt-8">
                     <h3 className="text-2xl font-bold text-green-400 mb-6">{hasAttempt ? "Resultado de tu Evaluación" : "Preguntas para tu Evaluación"}</h3>
@@ -158,7 +174,7 @@ const EvaluationDetail = () => {
                                         <label className="block text-lg text-gray-300 mb-3">
                                             <strong className='font-semibold text-blue-400'>{pregunta.level}:</strong> {pregunta.question}
                                         </label>
-                                        
+
                                         {hasAttempt && attemptAnswer ? (
                                             // VISTA DE FEEDBACK (intento existente)
                                             <div>
@@ -204,7 +220,7 @@ const EvaluationDetail = () => {
 
     return (
         <DashboardLayout navLinks={studentNavLinks}>
-             <div className="flex justify-between items-center mb-8">
+            <div className="flex justify-between items-center mb-8">
                 <div>
                     <h1 className="text-3xl font-bold text-white">Detalle de la Evaluación</h1>
                     <p className="text-gray-400 mt-1">Revisa el análisis y responde las preguntas, o consulta tu resultado.</p>
@@ -214,6 +230,39 @@ const EvaluationDetail = () => {
                 </Link>
             </div>
             {renderContent()}
+
+            {/* Sección de Recomendación del Profesor */}
+            {recommendation && (
+                <div className="mt-8 bg-gradient-to-r from-purple-900/40 to-blue-900/40 p-6 rounded-lg border-2 border-purple-500/50 shadow-lg">
+                    <div className="flex items-start gap-4">
+                        <div className="flex-shrink-0">
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
+                            </svg>
+                        </div>
+                        <div className="flex-1">
+                            <h3 className="text-xl font-bold text-purple-300 mb-2">
+                                💬 Recomendación de tu Profesor
+                            </h3>
+                            <p className="text-sm text-gray-400 mb-3">
+                                <span className="font-semibold text-white">{recommendation.teacherName}</span> te ha dejado un comentario:
+                            </p>
+                            <div className="bg-gray-800/60 p-4 rounded-lg border border-purple-500/30">
+                                <p className="text-gray-200 leading-relaxed whitespace-pre-wrap">
+                                    {recommendation.comment}
+                                </p>
+                            </div>
+                            <p className="text-xs text-gray-500 mt-3">
+                                Recomendado el {new Date(recommendation.createdAt).toLocaleDateString('es-ES', {
+                                    year: 'numeric',
+                                    month: 'long',
+                                    day: 'numeric'
+                                })}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            )}
         </DashboardLayout>
     );
 };

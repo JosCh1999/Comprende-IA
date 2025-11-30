@@ -9,11 +9,16 @@ import ProtectedRoute from './components/ProtectedRoute';
 import StudentDashboard from './pages/student/Dashboard';
 import TeacherDashboard from './pages/teacher/Dashboard';
 
+// --- Páginas de Profesor ---
+import StudentList from './pages/teacher/StudentList';
+import StudentDetail from './pages/teacher/StudentDetail';
+import AttemptDetail from './pages/teacher/AttemptDetail';
+
 // --- Páginas de Estudiante para el Nuevo Layout ---
 import Upload from './pages/student/Upload';
 import Evaluations from './pages/student/Evaluations';
 import Progress from './pages/student/Progress';
-import EvaluationDetail from './pages/student/EvaluationDetail'; // <-- 1. IMPORTAMOS el nuevo componente
+import EvaluationDetail from './pages/student/EvaluationDetail';
 
 // --- Marcadores de posición ---
 const Placeholder = () => <div className="flex h-screen w-full items-center justify-center bg-gray-900 text-white"><h1>Coming Soon...</h1></div>;
@@ -29,43 +34,54 @@ function App() {
       </Route>
 
       {/* --- Rutas Protegidas para Estudiantes --- */}
-      <Route 
-        path="/student/dashboard" 
+      <Route
+        path="/student/dashboard"
         element={<ProtectedRoute allowedRoles={['student']}><StudentDashboard /></ProtectedRoute>}
       />
-      <Route 
-        path="/student/upload" 
+      <Route
+        path="/student/upload"
         element={<ProtectedRoute allowedRoles={['student']}><Upload /></ProtectedRoute>}
       />
-      <Route 
-        path="/student/evaluations" 
+      <Route
+        path="/student/evaluations"
         element={<ProtectedRoute allowedRoles={['student']}><Evaluations /></ProtectedRoute>}
       />
-      {/* --- 2. AÑADIMOS la nueva ruta dinámica --- */}
-      <Route 
-        path="/student/evaluations/:textId" 
+      <Route
+        path="/student/evaluations/:textId"
         element={
           <ProtectedRoute allowedRoles={['student']}>
             <EvaluationDetail />
           </ProtectedRoute>
         }
       />
-      <Route 
-        path="/student/progress" 
+      <Route
+        path="/student/progress"
         element={<ProtectedRoute allowedRoles={['student']}><Progress /></ProtectedRoute>}
       />
-      <Route 
-        path="/student/settings" 
+      <Route
+        path="/student/settings"
         element={<ProtectedRoute allowedRoles={['student']}><Placeholder /></ProtectedRoute>}
       />
 
       {/* --- Rutas Protegidas para Docentes --- */}
-      <Route 
-        path="/teacher/dashboard" 
+      <Route
+        path="/teacher/dashboard"
         element={<ProtectedRoute allowedRoles={['teacher']}><TeacherDashboard /></ProtectedRoute>}
       />
-      <Route 
-        path="/teacher/settings" 
+      <Route
+        path="/teacher/students"
+        element={<ProtectedRoute allowedRoles={['teacher']}><StudentList /></ProtectedRoute>}
+      />
+      <Route
+        path="/teacher/students/:studentId"
+        element={<ProtectedRoute allowedRoles={['teacher']}><StudentDetail /></ProtectedRoute>}
+      />
+      <Route
+        path="/teacher/attempts/:attemptId"
+        element={<ProtectedRoute allowedRoles={['teacher']}><AttemptDetail /></ProtectedRoute>}
+      />
+      <Route
+        path="/teacher/settings"
         element={<ProtectedRoute allowedRoles={['teacher']}><Placeholder /></ProtectedRoute>}
       />
 

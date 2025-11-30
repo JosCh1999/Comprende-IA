@@ -7,6 +7,8 @@ const authRouter = require('./routes/authRouter');
 const textRouter = require('./routes/textRouter');
 const aiRouter = require('./routes/aiRouter');
 const attemptRouter = require('./routes/attemptRouter'); // Importamos el router de intentos
+const teacherRouter = require('./routes/teacherRouter'); // Importamos el router de profesores
+const studentRouter = require('./routes/studentRouter'); // Importamos el router de estudiantes
 
 // Función para configurar y devolver la app
 const create_app = () => {
@@ -26,6 +28,8 @@ const create_app = () => {
     app.use('/textos', textRouter);
     app.use('/ai', aiRouter);
     app.use('/attempts', attemptRouter); // Montamos el nuevo enrutador en /attempts
+    app.use('/teacher', teacherRouter); // Montamos el router de profesores en /teacher
+    app.use('/student', studentRouter); // Montamos el router de estudiantes en /student
 
     return app;
 };

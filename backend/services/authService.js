@@ -23,7 +23,7 @@ const registerUser = async (userData) => {
     if (usuarioExistente) {
         throw new Error("El email ya está registrado");
     }
-    
+
     // La lógica de hasheo ahora vive aquí, en el servicio.
     const contraseñaHasheada = await bcrypt.hash(password, 10);
 
@@ -72,20 +72,21 @@ const loginUser = async (credentials) => {
     }
 
     // Creamos el payload para el token
-    const payload = { 
+    const payload = {
         id: usuario._id,
         role: usuario.role // HU07: Incluimos el rol en el token
     };
-    
+
     // Firmamos el token
-    const secret = process.env.JWT_SECRET || 'secret'; 
+    const secret = process.env.JWT_SECRET || 'secret';
     const token = jwt.sign(payload, secret, {
-      expiresIn: '24h',
+        expiresIn: '24h',
     });
 
     return {
         id: usuario._id,
         nombre: usuario.nombre,
+        correo: usuario.correo,
         role: usuario.role,
         token: token,
     };

@@ -1,5 +1,8 @@
 
 const attemptService = require('../services/attemptService');
+const notificationService = require('../services/notificationService');
+const Usuario = require('../model/usuario');
+const Text = require('../model/text');
 
 const createAttemptHandler = async (req, res) => {
     try {
@@ -12,6 +15,36 @@ const createAttemptHandler = async (req, res) => {
 
         const newAttempt = await attemptService.createAttempt(userId, textId, answers);
 
+        // --- INTEGRACIÓN CON N8N (Flujo 2: Feedback y Motivación) ---
+        // Enviar notificación a n8n de forma asíncrona (no bloqueante)
+        (async () => {
+            try {
+                const student = await Usuario.findById(userId);
+                const text = await Text.findById(textId);
+
+                await notificationService.sendAttemptNotification({
+                    student: {
+                        id: student._id,
+                        name: student.nombre,
+                        email: student.correo
+                    },
+                    text: {
+                        id: text._id,
+                        title: text.filename,
+                        summary: text.analysis ? text.analysis.resumen : "Sin resumen disponible"
+                    },
+                    attempt: {
+                        id: newAttempt._id,
+                        score: newAttempt.totalScore,
+                        answersCount: newAttempt.answers.length
+                    }
+                });
+            } catch (n8nError) {
+                // No bloqueamos el flujo principal
+                console.error('Error en notificación n8n:', n8nError.message);
+            }
+        })();
+
         res.status(201).json({
             message: "Intento evaluado y guardado correctamente.",
             attempt: newAttempt
@@ -19,9 +52,9 @@ const createAttemptHandler = async (req, res) => {
 
     } catch (error) {
         console.error("Error en el controlador al crear el intento:", error);
-        res.status(500).json({ 
+        res.status(500).json({
             message: "Error interno del servidor al procesar el intento.",
-            error: error.message 
+            error: error.message
         });
     }
 };
@@ -51,14 +84,14 @@ const getAttemptByUserAndTextHandler = async (req, res) => {
 
     } catch (error) {
         console.error("Error en el controlador al buscar el intento:", error);
-        res.status(500).json({ 
+        res.status(500).json({
             message: "Error interno del servidor al buscar el intento.",
-            error: error.message 
+            error: error.message
         });
     }
 };
 
-module.exports = { 
+module.exports = {
     createAttemptHandler,
     getAttemptByUserAndTextHandler // Exportamos el nuevo handler
 }; 

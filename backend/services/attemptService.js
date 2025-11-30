@@ -25,7 +25,7 @@ const createAttempt = async (userId, textId, answers) => {
         try {
             // Llamamos a la función de la IA para obtener la evaluación.
             const evaluationResult = await evaluateAnswer(ans.questionText, ans.userAnswer);
-            
+
             console.log(`Respuesta evaluada para pregunta ${ans.preguntaId}. Puntuación: ${evaluationResult.score}`);
 
             totalScorePoints += evaluationResult.score; // Sumamos los puntos obtenidos.
@@ -94,7 +94,7 @@ const findAttemptByUserAndText = async (userId, textId) => {
     }
 };
 
-module.exports = { 
+module.exports = {
     createAttempt,
     findAttemptByUserAndText // Exportamos la nueva función
 };

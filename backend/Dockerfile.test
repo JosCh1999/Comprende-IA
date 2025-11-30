@@ -1,0 +1,19 @@
+# Usar una imagen oficial de Node.js como base
+FROM node:18-alpine
+
+# 1. Establecer el directorio de trabajo principal dentro del contenedor
+WORKDIR /app
+
+# 2. Copiar TODO el contenido de tu proyecto al directorio /app
+# Esto asegura que la estructura de carpetas (backend, frontend) se mantiene intacta
+COPY . .
+
+# 3. Instalar las dependencias del backend
+# Nos movemos al directorio del backend y ejecutamos 'npm ci'
+WORKDIR /app/backend
+RUN npm ci
+
+# 4. Instalar las dependencias del frontend
+# Nos movemos al directorio del frontend y ejecutamos 'npm ci'
+WORKDIR /app/frontend
+RUN npm ci

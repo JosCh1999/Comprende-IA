@@ -23,7 +23,7 @@ async function callGeminiForJson(prompt) {
 
 // --- FUNCIÓN ÚNICA CON PROMPT DE CALIDAD EXPERTA ---
 const analyzeTextWithAI = async (text) => {
-    const analysisPrompt = `
+  const analysisPrompt = `
 Tu rol es actuar como un experto en lógica y pensamiento crítico. Tu tarea es realizar un análisis exhaustivo de un texto.
 
 Tu respuesta DEBE SER EXCLUSIVAMENTE un objeto JSON válido, sin comentarios, texto introductorio, o marcadores de código como \`\`\`json.
@@ -69,24 +69,24 @@ Texto: \'\'\'
 ${text}
 \'\'\'
     `;
-    return await callGeminiForJson(analysisPrompt);
+  return await callGeminiForJson(analysisPrompt);
 };
 
 
 const evaluateAnswer = async (questionText, userAnswer) => {
-    const evaluationPrompt = `
+  const evaluationPrompt = `
         Evalúa la respuesta de un usuario a una pregunta específica, en español.
         Responde EXCLUSIVAMENTE con un objeto JSON con "score" (1-5) y "feedback" (string).
 
         Pregunta: \\"${questionText}\\"
         Respuesta del usuario: \\"${userAnswer}\\"
     `;
-    return await callGeminiForJson(evaluationPrompt);
+  return await callGeminiForJson(evaluationPrompt);
 };
 
 module.exports = {
-    analyzeTextWithAI,
-    evaluateAnswer
+  analyzeTextWithAI,
+  evaluateAnswer
 };
 
 
