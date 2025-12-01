@@ -62,7 +62,10 @@ const getEnrolledStudents = async (teacherId) => {
         isActive: true
     }).populate('student', 'nombre correo');
 
-    return enrollments.map(enrollment => ({
+    // Filtrar enrollments donde el estudiante ya no existe (null)
+    const validEnrollments = enrollments.filter(enrollment => enrollment.student);
+
+    return validEnrollments.map(enrollment => ({
         enrollmentId: enrollment._id,
         studentId: enrollment.student._id,
         nombre: enrollment.student.nombre,

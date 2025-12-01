@@ -101,4 +101,32 @@ describe('Teacher API', () => {
         expect(response.statusCode).toBe(404);
     });
 
+    it('GET /teacher/students - debería manejar enrollments con estudiantes eliminados', async () => {
+        // 1. Crear otro estudiante y enrolarlo
+        const student2 = await new User({
+            nombre: 'Student Deleted',
+            correo: 'deleted@test.com',
+            contraseña: 'password123',
+            role: 'student'
+        }).save();
+
+        await request(app)
+            .post('/teacher/students/enroll')
+            .set('Authorization', `Bearer ${teacherToken}`)
+            .send({ studentEmail: 'deleted@test.com' });
+
+        // 2. Eliminar el estudiante manualmente
+        await User.findByIdAndDelete(student2._id);
+
+        // 3. Consultar la lista
+        const response = await request(app)
+            .get('/teacher/students')
+            .set('Authorization', `Bearer ${teacherToken}`);
+
+        expect(response.statusCode).toBe(200);
+        // Debería retornar solo el estudiante original (student_t), el eliminado se filtra
+        expect(response.body.students.find(s => s.correo === 'deleted@test.com')).toBeUndefined();
+        expect(response.body.students.length).toBeGreaterThanOrEqual(1);
+    });
+
 });
