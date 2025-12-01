@@ -274,8 +274,8 @@ Este proyecto es parte de un trabajo académico universitario.
 ## 👥 Autores
 
 - **Equipo Comprende-IA**
-- Universidad: [Nombre de la Universidad]
-- Curso: Desarrollo de Software
+- Universidad: Universidad Continental
+- Curso: Taller de Proyectos 2- Ingeniera de Sistemas e Informatica
 
 ---
 
