@@ -1,0 +1,232 @@
+{
+  "name": "Feedback y Motivación - Comprende IA (Logic Fix)",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "webhook",
+        "options": {}
+      },
+      "id": "e04611fc-1da7-4d3a-88c5-11ff1de32548",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        -448,
+        112
+      ],
+      "webhookId": "aa9f5392-a4a2-48f8-8634-de67168fe03d"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "number": [
+            {
+              "value1": "={{ $json.body ? $json.body.attempt.score : $json.attempt.score }}",
+              "value2": 60
+            }
+          ]
+        }
+      },
+      "id": "3dcf654a-a863-4e3f-8b2b-ea98fdaacab3",
+      "name": "Is Score < 60?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        -224,
+        112
+      ]
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Webhook').first().json.body.student.email }}",
+        "subject": "={{ 'Recursos para mejorar - ' + $('Webhook').first().json.body.text.title }}\n",
+        "message": "={{ 'Hola ' + $('Webhook').first().json.body.student.name + ',<br><br>Has completado la lectura \"' + $('Webhook').first().json.body.text.title + '\" con una puntuación de ' + $('Webhook').first().json.body.attempt.score + '%.<br><br>Aquí tienes algunas recomendaciones para mejorar:<br>' + $json.generated_text.replace(/\\n/g, '<br>') + '<br><br>¡Sigue practicando!' }}\n\n",
+        "options": {}
+      },
+      "id": "93168337-d8ce-494d-8463-fc7109f4a8a4",
+      "name": "Gmail (Low Score)",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2,
+      "position": [
+        576,
+        -64
+      ],
+      "webhookId": "66994d41-751c-4e70-b8cf-825f95cd6f67",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "28WfIhDGpUNFYDEq",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.body.student.email }}",
+        "subject": "={{ '¡Excelente trabajo! - ' + ($json.body ? $json.body.text.title : $json.text.title) }}",
+        "message": "={{ '¡Felicitaciones ' + ($json.body ? $json.body.student.name : $json.student.name) + '! 🎉<br><br>Has completado la lectura \"' + ($json.body ? $json.body.text.title : $json.text.title) + '\" con una puntuación de ' + ($json.body ? $json.body.attempt.score : $json.attempt.score) + '%.<br><br>Tu desempeño demuestra excelentes habilidades de comprensión. ¡Sigue así!' }}",
+        "options": {}
+      },
+      "id": "dd8101de-5b04-498d-ab8f-377188171901",
+      "name": "Gmail (High Score)",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2,
+      "position": [
+        464,
+        288
+      ],
+      "webhookId": "76ef3144-e7dd-4e00-b9d8-8fa45bcbca3c",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "28WfIhDGpUNFYDEq",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "a5306740-b2dc-4cb0-ab1f-7c71176e4e4c",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        768,
+        128
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extraer texto crudo de Gemini\nconst rawText = $json.content.parts[0].text;\n\n// LIMPIEZA simple\nlet cleanText = rawText\n  .replace(/```json/g, '')  // elimina ```json\n  .replace(/```/g, '')      // elimina ```\n  .replace(/\\\\\"/g, '\"')     // corrige comillas escapadas\n  .trim();\n\n// Parsear JSON\nlet recommendations = [cleanText]; // fallback\ntry {\n  recommendations = JSON.parse(cleanText);\n} catch (e) {\n  // Si falla, dividir por líneas\n  recommendations = cleanText\n    .split('\\n')\n    .map(l => l.trim())\n    .filter(l => l.length > 0);\n}\n\n// Formato email en HTML\nconst formattedText = recommendations\n  .map(item => `• ${item}`)\n  .join('<br><br>');\n\nconst generated_text = `\n📚 <strong>Recomendaciones de lecturas:</strong><br><br>\n${formattedText}\n`;\n\n// Devolver\nreturn [{\n  json: {\n    generated_text\n  }\n}];\n\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        304,
+        -48
+      ],
+      "id": "d535d648-caf3-4acb-b902-190757a1a343",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=Eres un tutor experto en comprensión lectora. Te doy el título y un breve resumen de un texto que un estudiante ha leído. \nTu tarea es recomendar 3 textos, artículos o lecturas breves relacionados con ese tema, explicando en 1 frase por qué cada uno le ayudaría a profundizar o mejorar su comprensión. \nResponde solo con una lista JSON de 3 cadenas de texto (sin texto adicional).\n\nTítulo: \"{{ $json.body ? $json.body.text.title : $json.text.title }}\"\nResumen: \"{{ $json.body ? $json.body.text.summary : $json.text.summary }}\""
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [
+        -64,
+        -16
+      ],
+      "id": "63509564-6c8a-4c84-a118-3527eb94bfd0",
+      "name": "Message a model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "SBVhtlqD8D37W0Yj",
+          "name": "Google Gemini(PaLM) Api account 2"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Is Score < 60?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Score < 60?": {
+      "main": [
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Gmail (High Score)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gmail (Low Score)": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gmail (High Score)": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Gmail (Low Score)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "1dff610f-8b3b-47cd-b82b-3125caf649ae",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "0feed87b55d1a9e5c7e20d0257bc173129a54a98487731f4f5d50ed0659a3b60"
+  },
+  "id": "DZMYUwu3QXBtQMg1",
+  "tags": []
+}

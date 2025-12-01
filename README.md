@@ -93,7 +93,6 @@ Editar `backend/.env` con tus credenciales:
 NODE_ENV=development
 PORT=4000
 MONGO_URI=mongodb://localhost:27017/comprende
-JWT_SECRET=tu_secreto_jwt_super_seguro
 GEMINI_API_KEY=tu_api_key_de_gemini
 N8N_WEBHOOK_URL=http://localhost:5678/webhook/
 ```

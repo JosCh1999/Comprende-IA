@@ -100,7 +100,7 @@ describe('AI API', () => {
         ]);
 
         const response = await request(app)
-            .get(`/ai/export-questions/${textId}`)
+            .get(`/ai/export-questions/${textId}/csv`)
             .set('Authorization', `Bearer ${token}`);
 
         expect(response.statusCode).toBe(200);
