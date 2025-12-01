@@ -12,7 +12,7 @@ let userId;
 beforeAll(async () => {
   const mongoUri = process.env.MONGO_URI || 'mongodb://localhost:27017/testdb_texts';
   await mongoose.connect(mongoUri, { useNewUrlParser: true, useUnifiedTopology: true });
-  
+
   server = app.listen(); // Start server on a random available port
 
   await User.deleteMany({});
@@ -39,21 +39,21 @@ describe('API de Textos - POST /textos', () => {
     const response = await request(app)
       .post('/textos')
       .set('Authorization', `Bearer ${token}`)
-      .send({ 
+      .send({
         filename: 'mi_archivo.txt',
         content: 'Este es un texto de prueba con filename.'
       });
 
     expect(response.statusCode).toBe(201);
-    expect(response.body.mensaje).toBe('Texto creado exitosamente');
-    expect(response.body.texto).toHaveProperty('filename', 'mi_archivo.txt');
-    expect(response.body.texto).toHaveProperty('content', 'Este es un texto de prueba con filename.');
+    expect(response.body.message).toBe('Texto creado exitosamente');
+    expect(response.body.text).toHaveProperty('filename', 'mi_archivo.txt');
+    expect(response.body.text).toHaveProperty('content', 'Este es un texto de prueba con filename.');
   });
 
   it('debería devolver un error 401 (No Autorizado) si no se proporciona un token', async () => {
     const response = await request(app)
       .post('/textos')
-      .send({ 
+      .send({
         filename: 'sin_token.txt',
         content: 'Este contenido no debería guardarse.'
       });
@@ -69,7 +69,7 @@ describe('API de Textos - POST /textos', () => {
       .send({ content: 'Contenido sin filename.' });
 
     expect(response.statusCode).toBe(400);
-    expect(response.body).toHaveProperty('mensaje');
+    expect(response.body).toHaveProperty('message');
   });
 
   it('debería devolver un error 400 (Bad Request) si falta el campo \'content\'', async () => {
@@ -79,7 +79,7 @@ describe('API de Textos - POST /textos', () => {
       .send({ filename: 'sin_contenido.txt' });
 
     expect(response.statusCode).toBe(400);
-    expect(response.body).toHaveProperty('mensaje');
+    expect(response.body).toHaveProperty('message');
   });
 
 });

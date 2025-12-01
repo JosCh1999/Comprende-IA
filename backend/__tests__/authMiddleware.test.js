@@ -49,8 +49,8 @@ describe('Auth Middleware - verifyToken', () => {
 
     await verifyToken(req, res, nextFunction);
 
-    expect(req.user).toBeDefined();
-    expect(req.user.id).toBe(userData.id);
+    expect(req.userId).toBeDefined();
+    expect(req.userId).toBe(userData.id);
     expect(nextFunction).toHaveBeenCalled();
     expect(res.status).not.toHaveBeenCalled();
     expect(res.json).not.toHaveBeenCalled();

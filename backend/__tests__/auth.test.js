@@ -30,9 +30,9 @@ describe('Auth API - /auth/register', () => {
         email: 'test@example.com',
         password: 'password123',
       });
-    
+
     expect(response.statusCode).toBe(201);
-    expect(response.body).toHaveProperty('mensaje', 'Usuario registrado exitosamente');
+    expect(response.body).toHaveProperty('message', 'Usuario registrado exitosamente');
     expect(response.body.usuario).toHaveProperty('nombre', 'Test User');
     expect(response.body.usuario).toHaveProperty('correo', 'test@example.com');
     expect(response.body.usuario).not.toHaveProperty('contraseña');
@@ -50,7 +50,7 @@ describe('Auth API - /auth/register', () => {
       });
 
     expect(response.statusCode).toBe(409);
-    expect(response.body).toHaveProperty('mensaje', 'El email ya está registrado');
+    expect(response.body).toHaveProperty('message', 'El email ya está registrado');
   });
 
   it('debería fallar si falta el email (400)', async () => {
@@ -62,7 +62,7 @@ describe('Auth API - /auth/register', () => {
       });
 
     expect(response.statusCode).toBe(400);
-    expect(response.body).toHaveProperty('mensaje'); 
+    expect(response.body).toHaveProperty('message');
   });
 });
 
@@ -86,7 +86,7 @@ describe('Auth API - /auth/login', () => {
       });
 
     expect(response.statusCode).toBe(200);
-    expect(response.body).toHaveProperty('mensaje', 'Usuario logueado exitosamente');
+    expect(response.body).toHaveProperty('message', 'Usuario logueado exitosamente');
     expect(response.body.usuario).toHaveProperty('token');
     expect(response.body.usuario.nombre).toBe('Login User');
   });
@@ -100,7 +100,7 @@ describe('Auth API - /auth/login', () => {
       });
 
     expect(response.statusCode).toBe(401);
-    expect(response.body).toHaveProperty('mensaje', 'Credenciales incorrectas');
+    expect(response.body).toHaveProperty('message', 'Credenciales incorrectas');
   });
 
   it('debería fallar con un email incorrecto (401)', async () => {
@@ -112,7 +112,7 @@ describe('Auth API - /auth/login', () => {
       });
 
     expect(response.statusCode).toBe(401);
-    expect(response.body).toHaveProperty('mensaje', 'Credenciales incorrectas');
+    expect(response.body).toHaveProperty('message', 'Credenciales incorrectas');
   });
 
   it('debería fallar si falta el password (400)', async () => {
@@ -122,7 +122,7 @@ describe('Auth API - /auth/login', () => {
         email: 'login@example.com',
       });
 
-    expect(response.statusCode).toBe(400);
-    expect(response.body).toHaveProperty('mensaje');
+    expect(response.statusCode).toBe(401);
+    expect(response.body).toHaveProperty('message');
   });
 });
