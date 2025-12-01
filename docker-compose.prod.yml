@@ -1,0 +1,87 @@
+version: '3.8'
+
+services:
+  # MongoDB Database
+  mongodb:
+    image: mongo:5.0
+    container_name: comprende-mongodb
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: admin123
+      MONGO_INITDB_DATABASE: comprende
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb-data:/data/db
+    networks:
+      - comprende-network
+
+  # Backend API
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: comprende-backend
+    restart: unless-stopped
+    ports:
+      - "4000:4000"
+    environment:
+      - NODE_ENV=production
+      - PORT=4000
+      - MONGO_URI=mongodb://admin:admin123@mongodb:27017/comprende?authSource=admin
+      # Agregar otras variables de entorno necesarias
+      # - JWT_SECRET=${JWT_SECRET}
+      # - GEMINI_API_KEY=${GEMINI_API_KEY}
+      # - N8N_WEBHOOK_URL=${N8N_WEBHOOK_URL}
+    depends_on:
+      - mongodb
+    networks:
+      - comprende-network
+    volumes:
+      # Montar volumen para archivos subidos (si es necesario)
+      - backend-uploads:/app/uploads
+
+  # Frontend
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: comprende-frontend
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - comprende-network
+
+  # n8n Workflow Automation
+  n8n:
+    image: n8nio/n8n:latest
+    container_name: comprende-n8n
+    restart: unless-stopped
+    ports:
+      - "5678:5678"
+    environment:
+      - N8N_BASIC_AUTH_ACTIVE=true
+      - N8N_BASIC_AUTH_USER=admin
+      - N8N_BASIC_AUTH_PASSWORD=admin123
+      - N8N_HOST=0.0.0.0
+      - N8N_PORT=5678
+      - N8N_PROTOCOL=http
+      - NODE_ENV=production
+      - WEBHOOK_URL=http://n8n:5678/
+    volumes:
+      - n8n-data:/home/node/.n8n
+    networks:
+      - comprende-network
+
+networks:
+  comprende-network:
+    driver: bridge
+
+volumes:
+  mongodb-data:
+  backend-uploads:
+  n8n-data:
